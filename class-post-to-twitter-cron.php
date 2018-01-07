@@ -118,13 +118,16 @@ class Post_To_Twitter_Cron {
 						$excerpt = get_the_content_filtered($excerpt);
 					}
 				}
+				$maxchars_excerpt = $maxchars_str - strlen($str);
 				if (function_exists('get_excerpt')) {
-					$excerpt = get_excerpt($excerpt, $maxchars_str - strlen($str), array('trim_title' => $title_arr, 'trim_urls' => true, 'plaintext' => true, 'single_line' => true));
+					$excerpt = get_excerpt($excerpt, $maxchars_excerpt, array('trim_title' => $title_arr, 'trim_urls' => true, 'plaintext' => true, 'single_line' => true));
 				}
 				else {
 					$excerpt = wp_strip_all_tags($excerpt, true);
-					$excerpt = preg_replace("/\[[^\]]+\]/is", "", $excerpt); // strip_all_shortcodes					
-					$excerpt = wp_trim_words($excerpt, 10, '...');
+					$excerpt = preg_replace("/\[[^\]]+\]/is", "", $excerpt); // strip_all_shortcodes
+					if (strlen($excerpt) > $maxchars_excerpt) {
+						$excerpt = substr($excerpt, 0, $maxchars_excerpt).wp_trim_words(substr($excerpt, $maxchars_excerpt), 1, '...');
+					}
 				}
 				$str .= ' - '.$excerpt;
 			}
