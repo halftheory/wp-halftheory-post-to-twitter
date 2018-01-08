@@ -358,7 +358,8 @@ class Post_To_Twitter {
 							'post_type' => $value,
 							'orderby' => 'menu_order',
 							'order' => 'ASC',
-							'post_parent' => 0
+							'post_parent' => 0,
+							'suppress_filters' => false,
 				        ));
 			            if (empty($posts)) {
 			            	echo '<p>';
