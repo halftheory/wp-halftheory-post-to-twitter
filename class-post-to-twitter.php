@@ -37,6 +37,23 @@ class Post_To_Twitter {
 
 	/* functions-common */
 
+	private function make_array($str = '', $sep = ',') {
+		if (function_exists(__FUNCTION__)) {
+			$func = __FUNCTION__;
+			return $func($str, $sep);
+		}
+		if (is_array($str)) {
+			return $str;
+		}
+		if (empty($str)) {
+			return array();
+		}
+		$arr = explode($sep, $str);
+		$arr = array_map('trim', $arr);
+		$arr = array_filter($arr);
+		return $arr;
+	}
+
 	private function is_front_end() {
 		if (function_exists(__FUNCTION__)) {
 			$func = __FUNCTION__;
@@ -375,19 +392,6 @@ class Post_To_Twitter {
 	}
 
     /* functions */
-
-	public function make_array($str = '') {
-		if (is_array($str)) {
-			return $str;
-		}
-		if (empty($str)) {
-			return array();
-		}
-		$arr = explode(",", $str);
-		$arr = array_map('trim', $arr);
-		$arr = array_filter($arr);
-		return $arr;
-	}
 
 	public function get_option($key = '') {
 		if (!isset($this->option)) {

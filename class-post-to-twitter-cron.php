@@ -167,6 +167,7 @@ class Post_To_Twitter_Cron {
 			'nopaging' => true,
 			'ignore_sticky_posts' => true,
 			'orderby' => 'modified',
+			'suppress_filters' => false,
 			// recently modified
 			'date_query' => array(
 				array(
