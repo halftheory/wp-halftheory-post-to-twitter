@@ -24,7 +24,7 @@ class Post_To_Twitter_Cron {
 		if (!is_a($plugin, 'Post_To_Twitter')) {
 			return;
 		}
-		$active = $plugin->get_option('active');
+		$active = $plugin->get_option('active', false);
 		if (empty($active)) {
 			return;
 		}
@@ -50,11 +50,11 @@ class Post_To_Twitter_Cron {
 		$do_tweet = false;
 		$connection = null;
 		if (strpos($_SERVER['HTTP_HOST'], 'localhost') === false) {
-			$consumer_key = $this->plugin->get_option('consumer_key');
-			$consumer_secret = $this->plugin->get_option('consumer_secret');
+			$consumer_key = $this->plugin->get_option('consumer_key', null);
+			$consumer_secret = $this->plugin->get_option('consumer_secret', null);
 			if (!empty($consumer_key) && !empty($consumer_secret)) {
-				$oauth_token = $this->plugin->get_option('oauth_token');
-				$oauth_token_secret = $this->plugin->get_option('oauth_token_secret');
+				$oauth_token = $this->plugin->get_option('oauth_token', null);
+				$oauth_token_secret = $this->plugin->get_option('oauth_token_secret', null);
 				// null is better than false?
 				if (empty($oauth_token)) {
 					$oauth_token = null;
@@ -70,7 +70,7 @@ class Post_To_Twitter_Cron {
 			}
 		}
 
-		$urlshortener_key = $this->plugin->get_option('urlshortener_key');
+		$urlshortener_key = $this->plugin->get_option('urlshortener_key', null);
 		$this->current_time = current_time('timestamp');
 		$maxchars = 140;
 
@@ -143,17 +143,17 @@ class Post_To_Twitter_Cron {
 	private function get_posts($time = '2 hours ago') {
 		$posts = array();
 
-		$allowed_post_types = $this->plugin->get_option('allowed_post_types');
+		$allowed_post_types = $this->plugin->get_option('allowed_post_types', array());
 		if (empty($allowed_post_types)) {
 			return false;
 		}
 		$allowed_post_types = $this->plugin->make_array($allowed_post_types);		
-		$allowed_post_statuses = $this->plugin->get_option('allowed_post_statuses');
+		$allowed_post_statuses = $this->plugin->get_option('allowed_post_statuses', array());
 		if (empty($allowed_post_statuses)) {
 			return false;
 		}
 		$allowed_post_statuses = $this->plugin->make_array($allowed_post_statuses);
-		$excluded_posts = $this->plugin->get_option('excluded_posts');
+		$excluded_posts = $this->plugin->get_option('excluded_posts', array());
 		$excluded_posts = $this->plugin->make_array($excluded_posts);
 		$excluded_posts = apply_filters('posttotwitter_excluded_posts', $excluded_posts);
 

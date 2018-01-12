@@ -29,7 +29,7 @@ class Post_To_Twitter {
 		}
 
 		// stop if not active
-		$active = $this->get_option('active');
+		$active = $this->get_option('active', false);
 		if (empty($active)) {
 			return;
 		}
@@ -91,7 +91,7 @@ class Post_To_Twitter {
 
 	public function schedule_event($active = true) { // set to false to force event clearing
 		if ($active !== false) {
-			$active = $this->get_option('active');
+			$active = $this->get_option('active', false);
 			if (empty($active)) {
 				$active = false;
 			}
@@ -120,7 +120,7 @@ class Post_To_Twitter {
 
 	public function schedule_hook($echo_output = false) {
 		// stop if not active
-		$active = $this->get_option('active');
+		$active = $this->get_option('active', false);
 		if (empty($active)) {
 			return;
 		}
@@ -225,7 +225,16 @@ class Post_To_Twitter {
 		            	echo $updated;
 		            }
 		        	else {
-		            	echo $error;
+		        		// were there changes?
+		        		$options_old = $plugin->get_option(null, array());
+		        		ksort($options_old);
+		        		ksort($options);
+		        		if ($options_old !== $options) {
+		            		echo $error;
+		            	}
+		            	else {
+			            	echo $updated;
+		            	}
 		        	}
 				}
 				else {
@@ -246,8 +255,8 @@ class Post_To_Twitter {
 
 		// show the form
 		$options_arr = $plugin->get_options_array();
-		$options = $plugin->get_option();
-		$options = array_merge( array_fill_keys($options_arr, null), (array)$options );
+		$options = $plugin->get_option(null, array());
+		$options = array_merge( array_fill_keys($options_arr, null), $options );
 		?>
 	    <form id="<?php echo $plugin->prefix; ?>-admin-form" name="<?php echo $plugin->prefix; ?>-admin-form" method="post" action="<?php echo $_SERVER['REQUEST_URI']; ?>">
 		<?php
@@ -394,16 +403,16 @@ class Post_To_Twitter {
 
     /* functions */
 
-	public function get_option($key = '') {
+	private function get_option($key = '', $default = array()) {
 		if (!isset($this->option)) {
-			$option = get_option($this->prefix, array());
+			$option = get_option($this->prefix, $default);
 			$this->option = $option;
 		}
 		if (!empty($key)) {
 			if (array_key_exists($key, $this->option)) {
 				return $this->option[$key];
 			}
-			return false;
+			return $default;
 		}
 		return $this->option;
 	}
