@@ -405,7 +405,7 @@ class Post_To_Twitter {
 
 	private function get_option($key = '', $default = array()) {
 		if (!isset($this->option)) {
-			$option = get_option($this->prefix, $default);
+			$option = get_option($this->prefix, array());
 			$this->option = $option;
 		}
 		if (!empty($key)) {
