@@ -2,6 +2,7 @@
 /*
 Plugin Name: Post to Twitter
 Plugin URI: https://github.com/halftheory/wp-halftheory-post-to-twitter
+GitHub Plugin URI: https://github.com/halftheory/wp-halftheory-post-to-twitter
 Description: Post to Twitter
 Author: Half/theory
 Author URI: https://github.com/halftheory
