@@ -208,21 +208,37 @@ class Post_To_Twitter_Cron {
 		if (empty($api_key)) {
 			return $url;
 		}
+		$c_url = 'https://www.googleapis.com/urlshortener/v1/url?key='.$api_key;
 		$data = array(
 			'longUrl' => $url,
 			'key' => $api_key,
 		);
-		$curlObj = curl_init();
-		curl_setopt($curlObj, CURLOPT_URL, 'https://www.googleapis.com/urlshortener/v1/url?key='.$api_key);
-		curl_setopt($curlObj, CURLOPT_RETURNTRANSFER, 1);
-		curl_setopt($curlObj, CURLOPT_SSL_VERIFYPEER, 0);
-		curl_setopt($curlObj, CURLOPT_HEADER, 0);
-		curl_setopt($curlObj, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
-		curl_setopt($curlObj, CURLOPT_POST, 1);
-		curl_setopt($curlObj, CURLOPT_POSTFIELDS, json_encode($data));
-		$response = curl_exec($curlObj);
-		$response = json_decode($response);
-		curl_close($curlObj);
+        $c = @curl_init();
+        // try 'correct' way
+        curl_setopt($c, CURLOPT_URL, $c_url);
+        curl_setopt($c, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($c, CURLOPT_HEADER, 0);
+		curl_setopt($c, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
+		curl_setopt($c, CURLOPT_POST, 1);
+		curl_setopt($c, CURLOPT_POSTFIELDS, json_encode($data));
+        curl_setopt($c, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($c, CURLOPT_MAXREDIRS, 10);
+        $res = curl_exec($c);
+        // try 'insecure' way
+        if (empty($res)) {
+            curl_setopt($c, CURLOPT_URL, $c_url);
+            curl_setopt($c, CURLOPT_RETURNTRANSFER, true);
+			curl_setopt($c, CURLOPT_HEADER, 0);
+			curl_setopt($c, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
+			curl_setopt($c, CURLOPT_POST, 1);
+			curl_setopt($c, CURLOPT_POSTFIELDS, json_encode($data));
+            curl_setopt($c, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($c, CURLOPT_SSL_VERIFYHOST, 0);
+            curl_setopt($c, CURLOPT_USERAGENT, $this->plugin->plugin_title);
+            $res = curl_exec($c);
+        }
+        curl_close($c);
+		$res = json_decode($res);
 		if (!is_object($response)) {
 			return false;
 		}
