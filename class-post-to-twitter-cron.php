@@ -213,6 +213,9 @@ class Post_To_Twitter_Cron {
 			'longUrl' => $url,
 			'key' => $api_key,
 		);
+		if (!function_exists('curl_init')) {
+			return false;
+		}
         $c = @curl_init();
         // try 'correct' way
         curl_setopt($c, CURLOPT_URL, $c_url);
@@ -234,16 +237,23 @@ class Post_To_Twitter_Cron {
 			curl_setopt($c, CURLOPT_POSTFIELDS, json_encode($data));
             curl_setopt($c, CURLOPT_SSL_VERIFYPEER, false);
             curl_setopt($c, CURLOPT_SSL_VERIFYHOST, 0);
-            curl_setopt($c, CURLOPT_USERAGENT, $this->plugin->plugin_title);
+			$user_agent = $this->plugin->plugin_title;
+			if (isset($_SERVER["HTTP_USER_AGENT"]) && !empty($_SERVER["HTTP_USER_AGENT"])) {
+				$user_agent = $_SERVER["HTTP_USER_AGENT"];
+			}
+            curl_setopt($c, CURLOPT_USERAGENT, $user_agent);
             $res = curl_exec($c);
         }
         curl_close($c);
+        if (empty($res)) {
+        	return false;
+        }
 		$res = json_decode($res);
-		if (!is_object($response)) {
+		if (!is_object($res)) {
 			return false;
 		}
-		if (!empty($response->id)) {
-			return $response->id;
+		if (!empty($res->id)) {
+			return $res->id;
 		}
 		return false;
 	}
