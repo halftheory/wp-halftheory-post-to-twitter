@@ -63,27 +63,36 @@ class Post_To_Twitter {
 			return false;
 		}
 		if (wp_doing_ajax()) {
-			if (!empty($_SERVER["HTTP_REFERER"])) {
-				$url_test = $_SERVER["HTTP_REFERER"];
-			}
-			else {
-				$url_test = $this->get_current_uri();
-			}
-			if (strpos($url_test, admin_url()) !== false) {
+			if (strpos($this->get_current_uri(), admin_url()) !== false) {
 				return false;
 			}
 		}
 		return true;
 	}
 
-	private function get_current_uri() {
+	private function get_current_uri($keep_query = false) {
 		if (function_exists(__FUNCTION__)) {
 			$func = __FUNCTION__;
-			return $func();
+			return $func($keep_query);
 		}
 	 	$res  = is_ssl() ? 'https://' : 'http://';
 	 	$res .= $_SERVER['HTTP_HOST'];
 	 	$res .= $_SERVER['REQUEST_URI'];
+		if (wp_doing_ajax()) {
+			if (!empty($_SERVER["HTTP_REFERER"])) {
+				$res = $_SERVER["HTTP_REFERER"];
+			}
+		}
+		if (!$keep_query) {
+			$remove = array();
+			if ($str = parse_url($res, PHP_URL_QUERY)) {
+				$remove[] = '?'.$str;
+			}
+			if ($str = parse_url($res, PHP_URL_FRAGMENT)) {
+				$remove[] = '#'.$str;
+			}
+			$res = str_replace($remove, '', $res);
+		}
 		return $res;
 	}
 
@@ -103,7 +112,7 @@ class Post_To_Twitter {
 		// add event
 		if ($active) {
 			if ($timestamp_next === false) {
-				$current_time = current_time('timestamp');
+				$current_time = time();
 				$timestamp = $current_time + 120; // add 2 mins
 				wp_clear_scheduled_hook($this->prefix.'_schedule_hook');
 				wp_schedule_event($timestamp, 'hourly', $this->prefix.'_schedule_hook');
@@ -151,7 +160,7 @@ class Post_To_Twitter {
 				$this->plugin_title,
 				'manage_options',
 				$this->prefix,
-				__CLASS__ .'::menu_page'
+				array($this,'menu_page')
 			);
 			return;
 		}
@@ -172,7 +181,7 @@ class Post_To_Twitter {
 				$parent_name,
 				'manage_options',
 				$parent_slug,
-				__CLASS__ .'::menu_page'
+				array($this,'menu_page')
 			);
 		}
 
@@ -183,11 +192,11 @@ class Post_To_Twitter {
 			$this->plugin_title,
 			'manage_options',
 			$this->prefix,
-			__CLASS__ .'::menu_page'
+			array($this,'menu_page')
 		);
 	}
 
-	public function menu_page() {
+	public static function menu_page() {
  		global $title;
 		?>
 		<div class="wrap">
@@ -195,7 +204,7 @@ class Post_To_Twitter {
 		<?php
  		$plugin = new Post_To_Twitter();
 
-        if ($_POST['save']) {
+        if (isset($_POST['save']) && !empty($_POST['save'])) {
         	$save = function() use ($plugin) {
 				// verify this came from the our screen and with proper authorization
 				if (!isset($_POST[$plugin->plugin_name.'::menu_page'])) {
@@ -390,9 +399,7 @@ class Post_To_Twitter {
         	</div>
         </div>
 
-        <p class="submit">
-            <input type="submit" value="Update" id="publish" class="button button-primary button-large" name="save">
-        </p>
+        <?php submit_button(__('Update'), array('primary','large'), 'save'); ?>
 
         </div><!-- poststuff -->
     	</form>
@@ -434,6 +441,7 @@ class Post_To_Twitter {
     private function get_options_array() {
 		return array(
 			'active',
+			'cron',
 			'consumer_key',
 			'consumer_secret',
 			'oauth_token',
