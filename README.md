@@ -1,5 +1,5 @@
 # wp-halftheory-post-to-twitter
-Wordpress plugin for automatically tweeting any post type to Twitter.
+WordPress plugin for automatically tweeting any post type to Twitter.
 
 This plugin automatically posts a Twitter status update when you modify a post.
 

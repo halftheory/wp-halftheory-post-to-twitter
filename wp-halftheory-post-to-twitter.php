@@ -17,7 +17,7 @@ posttotwitter_uninstall(string $db_prefix)
 */
 
 // Exit if accessed directly.
-defined('ABSPATH') || exit;
+defined('ABSPATH') || exit(__FILE__);
 
 if (!class_exists('Post_To_Twitter_Plugin')) :
 class Post_To_Twitter_Plugin {
@@ -42,7 +42,7 @@ class Post_To_Twitter_Plugin {
 		$plugin = new self;
 		$plugin->subclass->schedule_event(false);
 
-		// remove transients
+		// Remove transients.
 		global $wpdb;
 		$query_single = "DELETE FROM $wpdb->options WHERE option_name LIKE '_transient_".$plugin->subclass->prefix."%' OR option_name LIKE '_transient_timeout_".$plugin->subclass->prefix."%'";
 		if (is_multisite()) {
@@ -65,7 +65,7 @@ class Post_To_Twitter_Plugin {
 		$plugin = new self;
 		$plugin->subclass->schedule_event(false);
 
-		// remove options + postmeta
+		// Remove options + postmeta.
 		global $wpdb;
 		$query_options = "DELETE FROM $wpdb->options WHERE option_name LIKE '".$plugin->subclass->prefix."_%'";
 		$query_postmeta = "DELETE FROM $wpdb->postmeta WHERE meta_key LIKE '".$plugin->subclass->prefix."_%'";
@@ -101,4 +101,3 @@ function Post_To_Twitter_Plugin_uninstall() {
 	Post_To_Twitter_Plugin::uninstall();
 };
 register_uninstall_hook(__FILE__, 'Post_To_Twitter_Plugin_uninstall');
-?>

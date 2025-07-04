@@ -1,11 +1,11 @@
 <?php
 // Exit if accessed directly.
-defined('ABSPATH') || exit;
+defined('ABSPATH') || exit(__FILE__);
 
 require_once __DIR__ . '/twitteroauth/autoload.php';
 use Abraham\TwitterOAuth\TwitterOAuth;
 
-if ( ! class_exists('Post_To_Twitter_Cron') ) :
+if ( ! class_exists('Post_To_Twitter_Cron') ) {
 	class Post_To_Twitter_Cron {
 
 		private $loaded = false;
@@ -13,15 +13,15 @@ if ( ! class_exists('Post_To_Twitter_Cron') ) :
 
 		public function __construct($plugin = false) {
 			if (!class_exists('Abraham\TwitterOAuth\TwitterOAuth')) {
-		    	return;
+				return;
 			}
 			if (!class_exists('Post_To_Twitter')) {
-		    	return;
+				return;
 			}
 			if (empty($plugin) || !is_object($plugin)) {
 				$plugin = new Post_To_Twitter();
 			}
-	    	if (!($plugin instanceof Post_To_Twitter)) {
+			if (!($plugin instanceof Post_To_Twitter)) {
 				return;
 			}
 			$active = $plugin->get_option('active', false);
@@ -33,20 +33,18 @@ if ( ! class_exists('Post_To_Twitter_Cron') ) :
 		}
 
 		public function do_cron($echo_output = false) {
-		    if (!$this->loaded) {
-		    	return false;
-		    }
-
-			// get posts
-		    $past = '2 hours ago';
-		    #$past = "-2 hours";
-		    #$past = "-2 years";
-			$posts = $this->get_posts($past);
-			if (empty($posts)) {
-		    	return false;
+			if (!$this->loaded) {
+				return false;
 			}
 
-			// connect to twitter
+			// Get posts.
+			$past = '2 hours ago';
+			$posts = $this->get_posts($past);
+			if (empty($posts)) {
+				return false;
+			}
+
+			// Connect to twitter.
 			$do_tweet = false;
 			$connection = null;
 			if (strpos($_SERVER['HTTP_HOST'], 'localhost') === false) {
@@ -55,7 +53,7 @@ if ( ! class_exists('Post_To_Twitter_Cron') ) :
 				if (!empty($consumer_key) && !empty($consumer_secret)) {
 					$oauth_token = $this->plugin->get_option('oauth_token', null);
 					$oauth_token_secret = $this->plugin->get_option('oauth_token_secret', null);
-					// null is better than false?
+					// Null is better than false?
 					if (empty($oauth_token)) {
 						$oauth_token = null;
 					}
@@ -81,11 +79,11 @@ if ( ! class_exists('Post_To_Twitter_Cron') ) :
 				if (empty($url)) {
 					continue;
 				}
-				// url too long
+				// URL too long.
 				if (strlen($url) > $maxchars) {
 					continue;
 				}
-				// url just fits
+				// URL just fits.
 				if (strlen($url) <= $maxchars && strlen($url) >= ($maxchars - 4)) {
 					$this->post_to_twitter($url, $do_tweet, $connection, $post->ID, $echo_output);
 					continue;
@@ -93,7 +91,7 @@ if ( ! class_exists('Post_To_Twitter_Cron') ) :
 
 				$maxchars_str = $maxchars - strlen($url) - 4;
 
-				// add titles
+				// Add titles.
 				$title_arr = array();
 				if ($post->post_parent > 0) {
 					$title_arr[] = get_the_title($post->post_parent);
@@ -104,7 +102,7 @@ if ( ! class_exists('Post_To_Twitter_Cron') ) :
 					$str = get_the_title($post);
 				}
 
-				// add excerpt
+				// Add excerpt.
 				if (strlen($str) < $maxchars_str && (!empty($post->post_excerpt) || !empty($post->post_content))) {
 					if (!empty($post->post_excerpt)) {
 						$excerpt = $post->post_excerpt;
@@ -124,7 +122,7 @@ if ( ! class_exists('Post_To_Twitter_Cron') ) :
 					}
 					else {
 						$excerpt = wp_strip_all_tags($excerpt, true);
-						$excerpt = preg_replace("/\[[^\]]+\]/is", "", $excerpt); // strip_all_shortcodes
+						$excerpt = preg_replace("/\[[^\]]+\]/is", "", $excerpt);
 						if (strlen($excerpt) > $maxchars_excerpt) {
 							$excerpt = substr($excerpt, 0, $maxchars_excerpt).wp_trim_words(substr($excerpt, $maxchars_excerpt), 1, '...');
 						}
@@ -132,7 +130,7 @@ if ( ! class_exists('Post_To_Twitter_Cron') ) :
 					$str .= ' - '.$excerpt;
 				}
 
-				// trim to maxchars
+				// Trim to maxchars.
 				$str = substr($str, 0, $maxchars - strlen($url) - 1);
 				$str = $str.' '.$url;
 				$this->post_to_twitter($str, $do_tweet, $connection, $post->ID, $echo_output);
@@ -168,14 +166,14 @@ if ( ! class_exists('Post_To_Twitter_Cron') ) :
 				'ignore_sticky_posts' => true,
 				'orderby' => 'modified',
 				'suppress_filters' => false,
-				// recently modified
+				// Recently modified.
 				'date_query' => array(
 					array(
 						'column' => 'post_modified_gmt',
 						'after'  => $time,
 					),
 				),
-				// ignore already tweeted
+				// Ignore already tweeted.
 				'meta_query' => array(
 					array(
 						'key' => $this->plugin->prefix,
@@ -189,7 +187,7 @@ if ( ! class_exists('Post_To_Twitter_Cron') ) :
 				return $posts;
 			}
 
-			// check ancestors
+			// Check ancestors.
 			foreach ($posts as $key => $value) {
 				$ancestors = get_ancestors($value->ID, $value->post_type);
 				if (empty($ancestors)) {
@@ -216,38 +214,38 @@ if ( ! class_exists('Post_To_Twitter_Cron') ) :
 			if (!function_exists('curl_init')) {
 				return false;
 			}
-	        $c = @curl_init();
-	        // try 'correct' way
-	        curl_setopt($c, CURLOPT_URL, $c_url);
-	        curl_setopt($c, CURLOPT_RETURNTRANSFER, true);
+			$c = @curl_init();
+			// Try 'correct' way.
+			curl_setopt($c, CURLOPT_URL, $c_url);
+			curl_setopt($c, CURLOPT_RETURNTRANSFER, true);
 			curl_setopt($c, CURLOPT_HEADER, 0);
 			curl_setopt($c, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
 			curl_setopt($c, CURLOPT_POST, 1);
 			curl_setopt($c, CURLOPT_POSTFIELDS, json_encode($data));
-	        curl_setopt($c, CURLOPT_FOLLOWLOCATION, true);
-	        curl_setopt($c, CURLOPT_MAXREDIRS, 10);
-	        $res = curl_exec($c);
-	        // try 'insecure' way
-	        if (empty($res)) {
-	            curl_setopt($c, CURLOPT_URL, $c_url);
-	            curl_setopt($c, CURLOPT_RETURNTRANSFER, true);
+			curl_setopt($c, CURLOPT_FOLLOWLOCATION, true);
+			curl_setopt($c, CURLOPT_MAXREDIRS, 10);
+			$res = curl_exec($c);
+			// Try 'insecure' way.
+			if (empty($res)) {
+				curl_setopt($c, CURLOPT_URL, $c_url);
+				curl_setopt($c, CURLOPT_RETURNTRANSFER, true);
 				curl_setopt($c, CURLOPT_HEADER, 0);
 				curl_setopt($c, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
 				curl_setopt($c, CURLOPT_POST, 1);
 				curl_setopt($c, CURLOPT_POSTFIELDS, json_encode($data));
-	            curl_setopt($c, CURLOPT_SSL_VERIFYPEER, false);
-	            curl_setopt($c, CURLOPT_SSL_VERIFYHOST, 0);
+				curl_setopt($c, CURLOPT_SSL_VERIFYPEER, false);
+				curl_setopt($c, CURLOPT_SSL_VERIFYHOST, 0);
 				$user_agent = $this->plugin->plugin_title;
 				if (isset($_SERVER["HTTP_USER_AGENT"]) && !empty($_SERVER["HTTP_USER_AGENT"])) {
 					$user_agent = $_SERVER["HTTP_USER_AGENT"];
 				}
-	            curl_setopt($c, CURLOPT_USERAGENT, $user_agent);
-	            $res = curl_exec($c);
-	        }
-	        curl_close($c);
-	        if (empty($res)) {
-	        	return false;
-	        }
+				curl_setopt($c, CURLOPT_USERAGENT, $user_agent);
+				$res = curl_exec($c);
+			}
+			curl_close($c);
+			if (empty($res)) {
+				return false;
+			}
 			$res = json_decode($res);
 			if (!is_object($res)) {
 				return false;
@@ -270,7 +268,6 @@ if ( ! class_exists('Post_To_Twitter_Cron') ) :
 					$res = $result->id_str;
 					update_post_meta($post_ID, $this->plugin->prefix, array('timestamp' => $this->current_time, 'twitterid' => $res));
 				}
-
 			}
 			if ($echo_output !== false) {
 				if ($res) {
@@ -286,7 +283,7 @@ if ( ! class_exists('Post_To_Twitter_Cron') ) :
 			return (bool)preg_match($pattern, $url);
 		}
 
-		/* functions-common */
+		// Functions common.
 
 		private function empty_notzero( $value ) {
 			if ( function_exists(__FUNCTION__) ) {
@@ -325,4 +322,4 @@ if ( ! class_exists('Post_To_Twitter_Cron') ) :
 			return $arr;
 		}
 	}
-endif;
+}
